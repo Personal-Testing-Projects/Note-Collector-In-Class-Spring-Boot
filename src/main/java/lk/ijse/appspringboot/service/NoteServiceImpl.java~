@@ -1,0 +1,80 @@
+package lk.ijse.appspringboot.service;
+
+import jakarta.transaction.Transactional;
+import lk.ijse.appspringboot.Exception.DataPersistException;
+import lk.ijse.appspringboot.customStatusCodes.SelectedUserAndNoteErrorStatus;
+import lk.ijse.appspringboot.dto.NoteStatus;
+import lk.ijse.appspringboot.dto.impl.NoteDTO;
+import lk.ijse.appspringboot.entity.impl.NoteEntity;
+import lk.ijse.appspringboot.entity.impl.UserEntity;
+import lk.ijse.appspringboot.util.AppUtil;
+import lk.ijse.appspringboot.util.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+public class NoteServiceImpl implements NoteService{
+    @Autowired
+    private NoteDAO noteDAO;
+
+    @Autowired
+    private Mapping noteMapping;
+
+    @Override
+    public void saveNote(NoteDTO noteDTO) {
+        noteDTO.setNoteId(AppUtil.generateID());
+        System.out.println("Note DTO before save : "+noteDTO);
+        NoteEntity savedNote = noteMapping.toNoteEntity(noteDTO);
+        System.out.println("Note Entity after map : "+savedNote);
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(noteDTO.getUserId());
+        savedNote.setUserEntity(userEntity);
+                noteDAO.save(savedNote);
+        System.out.println("Note Entity after save : " +savedNote);
+        if(savedNote == null){
+            throw new DataPersistException("Note not saved");
+        }
+    }
+
+    @Override
+    public List<NoteDTO> getAllNotes() {
+        return noteMapping.asNoteDTOList(noteDAO.findAll());
+    }
+
+    @Override
+    public NoteStatus getSelectedNote(String noteId) {
+        if (noteDAO.existsById(noteId)) {
+            var selectedUser = noteDAO.getReferenceById(noteId);
+            return noteMapping.toNoteDTO(selectedUser);
+        }else {
+            return new SelectedUserAndNoteErrorStatus(1,"Selected note not found");
+        }
+    }
+
+    @Override
+    public void deleteNote(String noteId) {
+        Optional<NoteEntity> foundNote = noteDAO.findById(noteId);
+        if(!foundNote.isPresent()){
+            throw new NoteNotFoundException("Note with id " + noteId + " not found");
+        }else {
+            noteDAO.deleteById(noteId);
+        }
+    }
+
+    @Override
+    public void updateNote(String noteId, NoteDTO noteDTO) {
+        Optional<NoteEntity> findNote = noteDAO.findById(noteId);
+        if (!findNote.isPresent()) {
+            throw new NoteNotFoundException("Note not found");
+        }else {
+            findNote.get().setNoteTitle(noteDTO.getNoteTitle());
+            findNote.get().setNoteDesc(noteDTO.getNoteDesc());
+            findNote.get().setCreatedDate(noteDTO.getCreatedDate());
+            findNote.get().setPriorityLevel(noteDTO.getPriorityLevel());
+        }
+    }
+}
