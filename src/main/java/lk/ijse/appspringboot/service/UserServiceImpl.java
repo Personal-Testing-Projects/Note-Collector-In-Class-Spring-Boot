@@ -10,6 +10,7 @@ import lk.ijse.appspringboot.dto.impl.UserDTO;
 import lk.ijse.appspringboot.entity.impl.UserEntity;
 import lk.ijse.appspringboot.util.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -69,5 +70,12 @@ public class UserServiceImpl implements UserService{
             tempUser.get().setPassword(userDTO.getPassword());
             tempUser.get().setProfilePic(userDTO.getProfilePic());
         }
+    }
+
+    @Override
+    public UserDetailsService userDetailsService() {
+        return username ->
+                userDAO.findByEmail(username)
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 }

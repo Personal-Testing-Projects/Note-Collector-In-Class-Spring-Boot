@@ -1,6 +1,7 @@
 package lk.ijse.appspringboot.dto.impl;
 
 import lk.ijse.appspringboot.dto.UserStatus;
+import lk.ijse.appspringboot.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,6 @@ public class UserDTO implements UserStatus {
     private String email;
     private String password;
     private String profilePic;
+    private Role role;
     private List<NoteDTO> notes;
 }
