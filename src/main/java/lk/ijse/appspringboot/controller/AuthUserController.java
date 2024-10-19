@@ -59,13 +59,13 @@ public class AuthUserController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PostMapping(value = "signin", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/signin", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JWTAuthResponse> signIn(@RequestBody SignIn signIn){
         return ResponseEntity.ok(authService.signIn(signIn));
     }
-    @PostMapping("refresh")
-    public ResponseEntity<JWTAuthResponse> signIn(@RequestParam("refreshToken") String refreshToken) {
-        return null;
+    @PostMapping("/refresh")
+    public ResponseEntity<JWTAuthResponse> refreshToken(@RequestParam("existingToken") String existingToken) {
+        return ResponseEntity.ok(authService.refreshToken(existingToken));
     }
 
 }
